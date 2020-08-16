@@ -19,20 +19,96 @@ class ToolsService extends Service {
             data: parmas,
             timeout: 2000,
             dataType: 'json',
-          });
-        if(result.data.code===0){
-              return true;
+        });
+        if (result.data.code === 0) {
+            return true;
         }
-        else{
+        else {
             return false;
         }
     }
 
-    async checkPhoneNum(phoneNum){
-        const user =  await this.ctx.model.User.findOne({phoneNum:phoneNum});
-        return user;
+    async getToken(user) {
 
+        const { app } = this;
+
+        const { _id, nickName, academy, grade, gender } = user;
+
+        const token = app.jwt.sign({
+            id: _id,
+            nickName,
+            academy,
+            grade,
+            gender
+        }, app.config.jwt.secret, {
+            expiresIn: '10h'
+        });
+
+        return token;
+    }
+
+    async checkPhoneNum(phoneNum) {
+        const user = await this.ctx.model.User.findOne({ phoneNum: phoneNum });
+        return user;
+    }
+
+    async updateUserInfo(info) {
+        let _id = info.id;
+        let userInfo = {
+            nickName: info.nickName,
+            academy: info.academy,
+            grade: info.grade,
+            gender: info.gender
+        }
+        const user = await this.ctx.model.User.updateOne({ _id }, userInfo)
+
+        console.log(666)
+        return user;
+    }
+
+    async robotMsg(text, id) {
+
+
+        let parmas = {
+            "perception":
+            {
+                "inputText":
+                {
+                    "text": text
+                },
+
+                "selfInfo":
+                {
+                    "location":
+                    {
+                        "city": "济南",
+                        "province": "长清区",
+                    }
+                }
+            },
+
+            "userInfo":
+            {
+                "apiKey": "37b355da4ccd4cb4a0f88828ede18e14",
+                "userId": id
+            }
+        }
+
+        // response = requests.post('http://openapi.tuling123.com/openapi/api/v2', data = req, headers = { 'content-type': 'application/json' })
+
+        const single_send_url = 'http://openapi.tuling123.com/openapi/api/v2'
+        const result = await this.ctx.curl(single_send_url, {
+            // 必须指定 method
+            method: 'POST',
+            data: JSON.stringify(parmas),
+            // timeout: 2000,
+            dataType: 'json',
+            // 'Content-Type': 'application/json'
+        });
+        return result.data.results[0].values.text
     }
 }
 
 module.exports = ToolsService;
+
+

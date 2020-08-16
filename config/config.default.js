@@ -18,6 +18,16 @@ module.exports = appInfo => {
   // add your middleware config here
   config.middleware = [];
 
+  config.io = {
+    init: { }, // passed to engine.io
+    namespace: {
+      '/': {
+        connectionMiddleware: ['connection'],
+        packetMiddleware: ['packet'],
+      },
+    },
+  };
+
   // add your user config here
   const userConfig = {
     // myAppName: 'egg',
@@ -43,3 +53,5 @@ module.exports = appInfo => {
 exports.jwt = {
   secret: "123456"
 };
+
+
